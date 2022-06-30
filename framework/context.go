@@ -16,10 +16,13 @@ type Context struct {
 	responseWriter http.ResponseWriter
 	request        *http.Request
 	ctx            context.Context
-	handler        ControllerHandler
 
 	hasTimeout bool        //请求是否超时
 	writerMux  *sync.Mutex //写保护机制
+
+	// 当前请求的handler链条
+	handlers []ControllerHandler
+	index    int // 当前请求调用到调用链的哪个节点
 }
 
 func NewContext(w http.ResponseWriter, r *http.Request) *Context {
@@ -28,6 +31,7 @@ func NewContext(w http.ResponseWriter, r *http.Request) *Context {
 		request:        r,
 		ctx:            r.Context(),
 		writerMux:      &sync.Mutex{},
+		index:          -1,
 	}
 }
 
@@ -50,6 +54,21 @@ func (ctx *Context) SetHasTimeout() {
 
 func (ctx *Context) HasTimeout() bool {
 	return ctx.hasTimeout
+}
+
+// 为context设置handlers
+func (ctx *Context) SetHandlers(handlers []ControllerHandler) {
+	ctx.handlers = handlers
+}
+
+// 核心函数，调用context的下一个函数
+func (ctx *Context) Next() error {
+	if ctx.index++; ctx.index < len(ctx.handlers) {
+		if err := ctx.handlers[ctx.index](ctx); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // #end Region
@@ -197,7 +216,7 @@ func (ctx *Context) Json(status int, obj interface{}) error {
 	ctx.responseWriter.WriteHeader(status)
 	byt, err := json.Marshal(obj)
 	if err != nil {
-		ctx.responseWriter.WriteHeader(500)
+		ctx.responseWriter.WriteHeader(http.StatusInternalServerError)
 		return err
 	}
 	ctx.responseWriter.Write(byt)
