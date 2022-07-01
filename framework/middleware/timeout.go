@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 )
 
@@ -31,13 +32,13 @@ func Timeout(d time.Duration) framework.ControllerHandler {
 		// 执行业务逻辑后操作
 		select {
 		case p := <-panicChan:
-			c.Json(500, "time out")
+			c.SetStatus(http.StatusInternalServerError).Json("panic")
 			log.Println(p)
 		case <-finish:
 			fmt.Println("finish")
 		case <-durationCtx.Done():
 			c.SetHasTimeout()
-			c.Json(500, "time out")
+			c.SetStatus(http.StatusInternalServerError).Json("time out")
 		}
 		return nil
 	}

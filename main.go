@@ -2,6 +2,7 @@ package main
 
 import (
 	"codedemo01/framework"
+	"fmt"
 	"net/http"
 )
 
@@ -16,4 +17,6 @@ func main() {
 	}
 
 	server.ListenAndServe()
+
+	fmt.Printf("111")
 }

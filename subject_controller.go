@@ -3,35 +3,36 @@ package main
 import (
 	"codedemo01/framework"
 	"fmt"
-	"net/http"
 )
 
 func SubjectAddController(c *framework.Context) error {
-	c.Json(http.StatusOK, fmt.Sprintf("ok, SubjectAddController, uri: %s", c.GetRequest().RequestURI))
+	c.SetOkStatus().Json("ok, SubjectAddController")
 	return nil
 }
 
 func SubjectListController(c *framework.Context) error {
-	c.Json(http.StatusOK, fmt.Sprintf("ok, SubjectListController, uri: %s", c.GetRequest().RequestURI))
+	c.SetOkStatus().Json("ok, SubjectListController")
 	return nil
 }
 
 func SubjectDelController(c *framework.Context) error {
-	c.Json(http.StatusOK, fmt.Sprintf("ok, SubjectDelController, uri: %s", c.GetRequest().RequestURI))
+	c.SetOkStatus().Json("ok, SubjectDelController")
 	return nil
 }
 
 func SubjectUpdateController(c *framework.Context) error {
-	c.Json(http.StatusOK, fmt.Sprintf("ok, SubjectUpdateController, uri: %s", c.GetRequest().RequestURI))
+	c.SetOkStatus().Json("ok, SubjectUpdateController")
 	return nil
 }
 
 func SubjectGetController(c *framework.Context) error {
-	c.Json(http.StatusOK, fmt.Sprintf("ok, SubjectGetController, uri: %s", c.GetRequest().RequestURI))
+	subjectId, _ := c.ParamInt("id", 0)
+	c.SetOkStatus().Json("ok, SubjectGetController:" + fmt.Sprint(subjectId))
+
 	return nil
 }
 
 func SubjectNameController(c *framework.Context) error {
-	c.Json(http.StatusOK, fmt.Sprintf("ok, SubjectNameController, uri: %s", c.GetRequest().RequestURI))
+	c.SetOkStatus().Json("ok, SubjectNameController")
 	return nil
 }
