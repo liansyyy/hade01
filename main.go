@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-
+	"fmt"
+	"github.com/liansyyy/hade/provider/demo"
 	"log"
 	"net/http"
 	"os"
@@ -15,7 +16,12 @@ import (
 )
 
 func main() {
+	// 创建engine结构
 	core := gin.New()
+
+	// 绑定具体的服务
+	core.Bind(&demo.DemoServiceProvider{})
+
 	core.Use(middleware.StartProcess(), middleware.Cost(), middleware.Recovery())
 
 	registerRouter(core)
@@ -24,6 +30,9 @@ func main() {
 		Handler: core,
 		Addr:    ":8888",
 	}
+	server.RegisterOnShutdown(func() {
+		fmt.Println("处理善后工作")
+	})
 	go func() {
 		server.ListenAndServe()
 	}()
