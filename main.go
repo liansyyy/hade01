@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/liansyyy/hade/provider/demo"
+
 	"log"
 	"net/http"
 	"os"
@@ -11,8 +11,11 @@ import (
 	"syscall"
 	"time"
 
+	hadeHttp "github.com/liansyyy/hade/app/http"
 	"github.com/liansyyy/hade/framework/gin"
 	"github.com/liansyyy/hade/framework/middleware"
+	"github.com/liansyyy/hade/framework/provider/app"
+	"github.com/liansyyy/hade/provider/demo"
 )
 
 func main() {
@@ -21,10 +24,12 @@ func main() {
 
 	// 绑定具体的服务
 	core.Bind(&demo.DemoServiceProvider{})
+	core.Bind(&app.HadeAppProvider{})
 
 	core.Use(middleware.StartProcess(), middleware.Cost(), middleware.Recovery())
 
-	registerRouter(core)
+	hadeHttp.Routes(core)
+	//registerRouter(core)
 
 	server := &http.Server{
 		Handler: core,
@@ -33,6 +38,8 @@ func main() {
 	server.RegisterOnShutdown(func() {
 		fmt.Println("\n\n处理善后工作\n\n")
 	})
+
+	// 这个goroutine是启动服务的goroutine
 	go func() {
 		server.ListenAndServe()
 	}()
