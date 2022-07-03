@@ -48,7 +48,10 @@ func main() {
 	defer cancel()
 
 	if err := server.Shutdown(withTimeoutCtx); err != nil {
-		log.Fatal("Server Shutdown: ", err)
+		log.Fatal("Server Shutdown error: ", err)
+	} else {
+		log.Fatal("Server shutdown ok")
 	}
-	time.Sleep(3 * time.Second)
+
+	time.Sleep(1 * time.Second)
 }
