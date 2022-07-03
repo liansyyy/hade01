@@ -31,7 +31,7 @@ func main() {
 		Addr:    ":8888",
 	}
 	server.RegisterOnShutdown(func() {
-		fmt.Println("处理善后工作")
+		fmt.Println("\n\n处理善后工作\n\n")
 	})
 	go func() {
 		server.ListenAndServe()
@@ -50,5 +50,5 @@ func main() {
 	if err := server.Shutdown(withTimeoutCtx); err != nil {
 		log.Fatal("Server Shutdown: ", err)
 	}
-
+	time.Sleep(3 * time.Second)
 }
