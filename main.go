@@ -1,64 +1,24 @@
 package main
 
 import (
-	"context"
-	"fmt"
-
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
-
-	hadeHttp "github.com/liansyyy/hade/app/http"
-	"github.com/liansyyy/hade/framework/gin"
-	"github.com/liansyyy/hade/framework/middleware"
+	"github.com/liansyyy/hade/app/console"
+	"github.com/liansyyy/hade/app/http"
+	"github.com/liansyyy/hade/framework"
 	"github.com/liansyyy/hade/framework/provider/app"
-	"github.com/liansyyy/hade/provider/demo"
+	"github.com/liansyyy/hade/framework/provider/kernel"
 )
 
-func main() {
-	// 创建engine结构
-	core := gin.New()
+func main() { // 初始化服务容器
+	container := framework.NewHadeContainer()
+	// 绑定App服务提供者
+	container.Bind(&app.HadeAppProvider{})
+	// 后续初始化需要绑定的服务提供者...
 
-	// 绑定具体的服务
-	core.Bind(&demo.DemoServiceProvider{})
-	core.Bind(&app.HadeAppProvider{})
-
-	core.Use(middleware.StartProcess(), middleware.Cost(), middleware.Recovery())
-
-	hadeHttp.Routes(core)
-	//registerRouter(core)
-
-	server := &http.Server{
-		Handler: core,
-		Addr:    ":8888",
-	}
-	server.RegisterOnShutdown(func() {
-		fmt.Println("\n\n处理善后工作\n\n")
-	})
-
-	// 这个goroutine是启动服务的goroutine
-	go func() {
-		server.ListenAndServe()
-	}()
-
-	// 当前的goroutine等待信号量
-	quit := make(chan os.Signal)
-	// 监控信号：SIGINT, SIGTERM, SIGQUIT
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	// 这里会阻塞当前goroutine等待信号
-	<-quit
-
-	withTimeoutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := server.Shutdown(withTimeoutCtx); err != nil {
-		log.Fatal("Server Shutdown error: ", err)
-	} else {
-		log.Fatal("Server shutdown ok")
+	// 将HTTP引擎初始化,并且作为服务提供者绑定到服务容器中
+	if engine, err := http.NewHttpEngine(); err == nil {
+		container.Bind(&kernel.HadeKernelProvider{HttpEngine: engine})
 	}
 
-	time.Sleep(1 * time.Second)
+	// 运行root命令
+	console.RunCommand(container)
 }
